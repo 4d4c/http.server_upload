@@ -155,7 +155,8 @@ def start_https_server(listening_port, basic_authentication_key, certificate_fil
     CustomBaseHTTPRequestHandler.basic_authentication_key = "Basic " + basic_authentication_key.decode("utf-8")
 
     https_server = http.server.HTTPServer(("0.0.0.0", listening_port), CustomBaseHTTPRequestHandler)
-    https_server.socket = ssl.wrap_socket(https_server.socket, certfile=certificate_file, server_side=True)
+    if certificate_file:
+        https_server.socket = ssl.wrap_socket(https_server.socket, certfile=certificate_file, server_side=True)
 
     try:
         https_server.serve_forever()
@@ -167,15 +168,14 @@ def start_https_server(listening_port, basic_authentication_key, certificate_fil
 
 if __name__ == '__main__':
     # TODO: add start path
-    # TODO: check if can bypass upload folder path (try nmap, nikto)
-    # TODO: auto key generation
-    #   openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes
-    # TODO: SSL not supported in XP/Windows 2003
-    if len(sys.argv) != 4:
-        print("[-] USAGE: {} <PORT> <USERNAME:PASSWORD> <CERTIFICATE FILE>".format(sys.argv[0]))
+    # TODO: add fix for path traversal
+    # openssl req -new -x509 -keyout .config/https_upload/server.pem -out .config/https_upload/server.pem -days 365 -nodes -subj "/C=/ST=/O=/OU=/CN="
+    if len(sys.argv) < 3:
+        print("[-] USAGE: {} <PORT> <USERNAME:PASSWORD> [CERTIFICATE FILE]".format(sys.argv[0]))
         sys.exit(1)
 
     listening_port = int(sys.argv[1])
     basic_authentication_key = base64.b64encode(sys.argv[2].encode("utf-8"))  # binary
-    certificate_file = sys.argv[3]
+    certificate_file = sys.argv[3] if len(sys.argv) == 4 else False
+    print("[+] Staring server...")
     start_https_server(listening_port, basic_authentication_key, certificate_file)
