@@ -58,9 +58,10 @@ class CustomBaseHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             }
         )
 
+        dir_path = os.path.dirname(os.path.realpath(__file__))
         file_name = urllib.parse.unquote(post_form["file"].filename)
 
-        with open(file_name, 'wb') as file_object:
+        with open(dir_path + self.path + file_name, 'wb') as file_object:
             shutil.copyfileobj(post_form["file"].file, file_object)
 
         return self.do_GET()
