@@ -157,7 +157,10 @@ def start_https_server(listening_port, basic_authentication_key, certificate_fil
 
     https_server = http.server.HTTPServer(("0.0.0.0", listening_port), CustomBaseHTTPRequestHandler)
     if certificate_file:
-        https_server.socket = ssl.wrap_socket(https_server.socket, certfile=certificate_file, server_side=True)
+        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        ssl_context.load_cert_chain(certfile=certificate_file)
+
+        https_server.socket = ssl_context.wrap_socket(https_server.socket, server_side=True)
 
     try:
         https_server.serve_forever()
